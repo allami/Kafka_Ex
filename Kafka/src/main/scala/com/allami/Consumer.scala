@@ -15,21 +15,27 @@ import com.allami.Producer.{producer, topic}
 import scala.collection.JavaConversions._
 
 
-object Consumer  extends App{
+import org.apache.kafka.common.serialization._
+import org.apache.kafka.streams._
+import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder}
+import com.typesafe.scalalogging._
+
+
+object Consumer  extends App   with LazyLogging{
 
   val consumer = Config.ConsumerConf.consumer
 
   consumer.subscribe(Collections.singletonList("data"))
 
-
   val records = consumer.poll(1000)
 
   for (record <- records) {
 
+     logger.info("timestamp :"+ record.timestamp())
+
       contains(record.value(),"error")
       contains(record.value(),"warn")
       contains(record.value(),"info")
-
 
   }
 
@@ -39,7 +45,6 @@ object Consumer  extends App{
    }
  }
 
-
   def sendData(line:String,topic :String)={
 
     val producer =  Config.ProducerConf.producer
@@ -47,7 +52,6 @@ object Consumer  extends App{
     producer.send(data)
 
   }
-
 
 
 }
