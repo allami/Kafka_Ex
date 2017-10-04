@@ -10,11 +10,9 @@ import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import com.allami.Config._
-import com.allami.Producer.{producer, topic}
+import com.allami.Producer.{getTimestamp, producer, topic}
 
 import scala.collection.JavaConversions._
-
-
 import org.apache.kafka.common.serialization._
 import org.apache.kafka.streams._
 import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder}
@@ -47,8 +45,12 @@ object Consumer  extends App   with LazyLogging{
 
   def sendData(line:String,topic :String)={
 
+    val datetime=line.split(" ")(0)+" "+line.split(" ")(1)
+    val timestamp=Producer.getTimestamp(datetime).get
+
     val producer =  Config.ProducerConf.producer
-    val data = new ProducerRecord[String, String](topic, "localhost", line)
+    val  data = new ProducerRecord[String,String](topic,3,timestamp,"ligne", line)
+
     producer.send(data)
 
   }
