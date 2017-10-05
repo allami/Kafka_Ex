@@ -18,8 +18,13 @@ object Producer extends App {
   val filename = "/opt/host.log"
   for (line <- Source.fromFile(filename).getLines) {
 
-    val datetime=line.split(" ")(0)+" "+line.split(" ")(1)
-    val timestamp=getTimestamp(datetime).get
+    val regex = "(\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}).*".r
+    val datetime=line match {
+      case regex(date) => Some(date)
+      case _ => None
+    }
+ 
+    val timestamp=Producer.getTimestamp(datetime.getOrElse("")).get
     val  data = new ProducerRecord[String,String](topic,3,timestamp,"ligne", line)
     producer.send(data)
 
