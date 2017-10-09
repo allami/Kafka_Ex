@@ -24,15 +24,25 @@ object Consumer  extends App   with LazyLogging{
   consumer.subscribe(Collections.singletonList("data"))
 
   val records = consumer.poll(1000)
+  try {
+    for (record <- records) {
 
-  for (record <- records) {
-
-     logger.info("timestamp :"+ record.timestamp())
+      logger.info("timestamp :"+ record.timestamp())
+      logger.info("timestamp :"+ record.key())
+      logger.info("timestamp :"+ record.value())
 
       contains(record.value(),"error")
       contains(record.value(),"warn")
       contains(record.value(),"info")
 
+      }
+  }
+  catch {
+  case ioe: InterruptedException =>
+    println(ioe)
+
+  }finally {
+    consumer.close()
   }
 
  def  contains(data:String, token:String ) ={
@@ -51,7 +61,7 @@ object Consumer  extends App   with LazyLogging{
     val timestamp=Producer.getTimestamp(datetime.getOrElse("")).get
 
     val producer =  Config.ProducerConf.producer
-    val  data = new ProducerRecord[String,String](topic,3,timestamp,"ligne", line)
+    val  data = new ProducerRecord[String,String](topic,0,timestamp,timestamp.toString, line)
 
     producer.send(data)
 
