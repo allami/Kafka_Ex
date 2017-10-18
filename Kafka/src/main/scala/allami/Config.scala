@@ -2,6 +2,7 @@ package com.allami
 
 import java.util.Properties
 
+import com.allami.Config.ProducerConf.props
 import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -10,13 +11,21 @@ object Config {
   object ConsumerConf {
 
     val props = new Properties()
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+
+    val brokers = "localhost:9092"
+    val groupId="data"
+
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers)
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true")
-    //props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000")
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, "data")
-    //props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000")
+    props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000")
+    props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "30000")
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId)
+
+
     val consumer = new KafkaConsumer[String, String](props)
   }
 

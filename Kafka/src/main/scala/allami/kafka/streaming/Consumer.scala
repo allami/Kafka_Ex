@@ -1,60 +1,19 @@
 package com.allami.kafka.streaming
 
-import java.util.Properties
-
-import org.apache.kafka.common.serialization._
-import org.apache.kafka.streams._
-import org.apache.kafka.streams.kstream.KStreamBuilder
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.kstream.KTable
-import org.apache.kafka.streams.kstream.KStreamBuilder
-import java.util.Arrays
-import java.util.Properties
-
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.kstream.KTable
-import org.apache.kafka.streams.kstream.KeyValueMapper
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.kstream.KStream
-import org.apache.kafka.streams.kstream.KStreamBuilder
-import org.apache.kafka.streams.kstream.KTable
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.kstream.KTable
-import org.apache.kafka.streams.kstream.KeyValueMapper
+import org.apache.kafka.streams.{KafkaStreams, KeyValue}
 import java.lang.Long
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 
-import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder, KTable}
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.KTable
-import java.util
-import java.util.Properties
-
-import org.apache.kafka.common.serialization._
-import org.apache.kafka.streams._
-import org.apache.kafka.streams.kstream.{KStreamBuilder, KeyValueMapper}
-import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.KStream
-import org.apache.kafka.streams.kstream.KTable
-import org.apache.kafka.streams.KeyValue
-import org.apache.kafka.streams.kstream.Reducer
+import org.apache.kafka.streams.kstream._
 import com.typesafe.scalalogging._
 import java.util
 import java.util.{Date, Locale}
 
 import org.apache.kafka.common.serialization.Serdes
-import org.apache.kafka.streams.kstream.KStream
-
 import com.allami.Consumer.logger
+import allami.HttpRest._
+case class Person(firstName: String, lastName: String, age: Int)
 
 object Consumer  extends  App with LazyLogging{
 
@@ -75,30 +34,48 @@ object Consumer  extends  App with LazyLogging{
 
 
 
-  logger.info("*****************errors******************** ")
+  logger.info("*****************Errors******************** ")
 
   val showErrors : KTable[String, Long] =error.groupByKey().count()
-  showErrors.print(stringSerde, Longerde)
+  showErrors.mapValues(new ValueMapper[Long, Long] {
+    def apply(value:Long) ={
+      add_to_couchdb(Config.bucket,Config.server,Config.password,value.toString,"error")
+      value
+    }
+  })
 
 
   logger.info("*****************Infos******************** ")
 
   val showInfo : KTable[String, Long] =info.groupByKey().count()
-  showInfo.print(stringSerde, Longerde)
-
 
   logger.info("*****************Warnings******************** ")
 
   val showWarning : KTable[String, Long] =warn.groupByKey().count()
-  showWarning.print(stringSerde, Longerde)
 
+
+    showWarning.mapValues(new ValueMapper[Long, Long] {
+      def apply( value:Long) ={
+        add_to_couchdb(Config.bucket,Config.server,Config.password,value.toString,"warning")
+        value
+      }
+    })
+
+
+  showWarning.writeAsText("/opt/warning.txt")
 
   val streams: KafkaStreams = new KafkaStreams(builder, config)
   streams.start()
 
+
   Runtime.getRuntime.addShutdownHook(new Thread(() => {
     streams.close(10, TimeUnit.SECONDS)
   }))
+
+
+
+
+
 
 
   /*

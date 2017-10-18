@@ -8,7 +8,7 @@ import org.apache.kafka.clients.consumer.{ConsumerConfig, KafkaConsumer}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import com.allami.Config._
-import com.allami.Producer.{getTimestamp, producer, topic}
+import com.allami.Producer.{getTimestamp, producer}
 
 import scala.collection.JavaConversions._
 import org.apache.kafka.common.serialization._

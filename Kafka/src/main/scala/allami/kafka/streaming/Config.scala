@@ -18,4 +18,9 @@ object Config {
     properties
   }
 
+  val bucket="data"
+  val server ="127.0.0.1"
+  val password="allami123"
+
+
 }
